@@ -10,6 +10,7 @@ var logger = morgan('combined');
 app.use(logger);
 
 var featuresLookup = null,
+    featuresCount = null,
     geojsonEtag = null;
 
 var clamp = function(val, min, max) {
@@ -19,6 +20,17 @@ var clamp = function(val, min, max) {
 app.get('/', function(req, res) {
     return res.sendfile('index.html');
 });
+
+app.get('/points/statistics', cors(), function(req, res) {
+    if (!featuresCount) {
+        return res.status(500).send({error: 'No points available.'});
+    }
+
+    return res.send({
+        count: featuresCount
+    });
+});
+
 app.get('/points/nearby', cors(), function(req, res) {
     if (!featuresLookup) {
         return res.status(500).send({error: 'No points available.'});
@@ -93,9 +105,10 @@ function updateGeojsonData() {
                 f
             ]
         });
+        featuresCount = features.length;
         featuresLookup = new sphereKnn(features);
 
-        console.log("Successfully loaded " + features.length + " features.");
+        console.log("Successfully loaded " + featuresCount + " features.");
 
         if (resp.headers['etag']) {
             geojsonEtag = resp.headers['etag'];
