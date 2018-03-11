@@ -8,9 +8,9 @@ var app = express();
 
 var logger = morgan('combined');
 app.use(logger);
-// app.use(express.logger());
 
-var featuresLookup = null;
+var featuresLookup = null,
+    geojsonEtag = null;
 
 var clamp = function(val, min, max) {
     return Math.min(Math.max(val, min), max);
@@ -60,15 +60,32 @@ app.get('/points/nearby', cors(), function(req, res) {
 });
 
 function updateGeojsonData() {
-    request({
+    options = {
         uri: process.env.GEOJSON_URL,
-        json: true
-    }, function(err, resp, body) {
+        json: true,
+    }
+
+    if (geojsonEtag) {
+        options.headers = {
+            'If-None-Match': geojsonEtag
+        }
+    }
+
+    request(options, function(err, resp, body) {
         if (err) {
             console.log(err);
             return;
         }
 
+        if (resp.statusCode === 304) {
+            console.log("No changes to GeoJSON since last check.");
+            return;
+        }
+
+        // The features come in as GeoJSON Features that have lat/lon on an array
+        // in a 'coordinates' object, but the sphere-knn library wants to see the
+        // lat/lon at the root level. To solve that we insert a list with
+        // [lat, lon, feature] and then peel it apart later when we access it.
         var features = body.features.map(function (f) {
             return [
                 f.geometry.coordinates[1],
@@ -79,6 +96,10 @@ function updateGeojsonData() {
         featuresLookup = new sphereKnn(features);
 
         console.log("Successfully loaded " + features.length + " features.");
+
+        if (resp.headers['etag']) {
+            geojsonEtag = resp.headers['etag'];
+        }
     });
 }
 
