@@ -1,0 +1,13 @@
+{
+  "name": "geojson-by-zipcode",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "~4.16.2",
+    "morgan": "~1.9.0",
+    "sphere-knn": "~1.3.1",
+    "request": "~2.83.0",
+    "cors": "~2.8.4"
+  },
+  "author": "Ian Dees <ian.dees@gmail.com>",
+  "license": "BSD"
+}
