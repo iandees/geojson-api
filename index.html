@@ -14,7 +14,7 @@
     <h1>Super Simple GeoJSON Nearby API</h1>
     <hr/>
 
-    <p>For more information, check out the <a href="https://github.com/iandees/geojson-nearby-api">code on Github</a>.</p>
+    <p>For more information, check out the <a href="https://github.com/iandees/geojson-api">code on Github</a>.</p>
 
     <h3>Example</h3>
     <hr/>
@@ -44,7 +44,7 @@
         function onMapClick(e) {
             console.log("You clicked the map at " + e.latlng.toString());
             var xhrequest = new XMLHttpRequest();
-            var url= "/points/nearby?lat="+e.latlng.lat+"&lon="+e.latlng.lng;
+            var url= "/points/nearby?lat=" + round(e.latlng.lat, 7) + "&lon=" + round(e.latlng.lng, 7);
             xhrequest.onreadystatechange = function() {
                 if (xhrequest.readyState == 4) {
                     if (xhrequest.status == 200) {
